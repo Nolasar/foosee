@@ -1,6 +1,6 @@
 import numpy as np
 from src.initializers import Initializer, GlorotUniform, Zeros
-from src.activations import Activation
+from src.activations import Activation, Linear
 
 class Dense:
     """
@@ -20,7 +20,7 @@ class Dense:
     def __init__(
         self,
         units: int,
-        activation:Activation,
+        activation:Activation=Linear(),
         weights_initializer:Initializer=GlorotUniform,
         bias_initializer:Initializer=Zeros,
         random_state:int = 42
@@ -49,6 +49,7 @@ class Dense:
         # Initialize weights and bias
         self.weights = self.weights_initializer(shape=(units_in, self.units),  rnd_state = self.rnd_state)
         self.bias = self.bias_initializer(shape=(1, self.units), rnd_state = self.rnd_state)
+        return self.units
 
     def forward(self, input: np.ndarray):
         """
@@ -90,8 +91,14 @@ class Dense:
         # Compute gradient of activation
         grad = prev_grad * self.activation.backward(self.output)
         # Compute gradients for weights and biases
-        self.dweights = self.input.T @ grad
-        self.dbias = np.sum(grad, axis=0, keepdims=True)
+        if len(self.input.shape) <= 2:
+            self.dweights = self.input.T @ grad
+            self.dbias = np.sum(grad, axis=0, keepdims=True)
+        else: 
+            # (b, f_in, n) @ (b , n, f_out) = sum_b [(b, f_in, f_out)]
+            self.dweights = np.sum(self.input.transpose(0,2,1) @ grad, axis=0)
+            # self.dweights = np.einsum('bin,bno->io, self.input, grad)
+            self.dbias = np.sum(grad, axis=(0,1), keepdims=False)
         # Compute gradient for the previous layer
         return grad @ self.weights.T
 

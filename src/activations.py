@@ -32,6 +32,20 @@ class Relu(Activation):
     def backward(self, out):
         return (out > 0).astype(float)
 
+class LeakyRelu:
+    def __init__(self, alpha=0.2):
+        self.alpha = alpha
+        self.output = None
+
+    def __call__(self, x: np.ndarray) -> np.ndarray:
+        self.output = np.where(x > 0, x, self.alpha * x)
+        return self.output
+
+    def backward(self, d_out: np.ndarray) -> np.ndarray:
+        dx = d_out.copy()
+        dx[self.output <= 0] *= self.alpha
+        return dx
+
 class RowWiseSoftmax(Activation):
     def __init__(self, axis=-1):
         self.axis = axis

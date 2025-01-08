@@ -1,12 +1,12 @@
 import numpy as np
 from src.initializers import Initializer, GlorotUniform, Zeros
-from src.activations import Activation, Sigmoid, Tanh
+from src.activations import Activation, Sigmoid, Tanh, Linear
 
 class SimpleRNN:
     def __init__(
         self,
         output_size:int,
-        activation:Activation,
+        activation:Activation=Linear(),
         activation_out:Activation=None,
         weights_initializer:Initializer=GlorotUniform,
         bias_initializer:Initializer=Zeros,
